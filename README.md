@@ -8,7 +8,7 @@ This is a short workshop to explain PostGIS raster.
 
 ----------
 
-##Create and restore the database
+## Create and restore the database
  
  In order to start the workshop we will load and existing database. 
 
@@ -16,7 +16,7 @@ Using pgAdmin please create a new, empty database and then restore the existing 
 
 
 ----------
-##Database structure
+## Database structure
 
 The restored database consists in the folowing structure:
 
@@ -34,13 +34,13 @@ Schema schema_name and rasters are empty,  you will add tables to them as you ad
 Please explore the database before continue.
 
 ----------
-##Loading rasters
+## Loading rasters
 
 We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. 
 We will use software [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader) , please check software documentation for more information.
 
 
-####Load the elevation data
+#### Load the elevation data
 
 We will use two examples, first we will use *raster2pgsql* to create a new .sql file. Later we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path were *raster2pgsql* will create the *dem.sql* file.
 
@@ -71,7 +71,7 @@ After loading the data please explore your database carefully, especially the sc
 
 ----------
 
-##Create rasters from other rasters
+## Create rasters from other rasters
 
 In the first example we'll see how to extract tiles that overlap a geometry. Optionally you can create a table with the result of the query, lets save this result in the *schema_name* schema so you can see the result in QGIS.
 
@@ -124,7 +124,7 @@ In addition to the example above, St_Union also allow us operations in overlapin
 
 
 ----------
-##Create rasters from vectors
+## Create rasters from vectors
 
 In the next examples we will rasterize one vector and learn some important PostGIS raster functions.
 
@@ -179,7 +179,7 @@ WHERE a.concelho ilike 'porto';
 
 ----------
 
-##Convert rasters into vectors
+## Convert rasters into vectors
 
 Now we will use ST_Intersection and ST_DumpAsPolygons to convert from rasters to vectors. PostGIS as more available functions for this, please check [https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry](https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry) for more information.
 
@@ -206,7 +206,7 @@ Both functions return a set of geomvals, form more information about geomval dat
 
 
 ----------
-##Analyzing rasters 
+## Analyzing rasters 
 
 **Example 1 - ST_Band**
 
@@ -297,7 +297,7 @@ ORDER BY b.name
 
 ----------
 
-##Map Algebra
+## Map Algebra
 
 There are two ways to use Map algebra in PostGIS. One is to use an expression and the other is to use a callback function. In the following examples we will create a NDVI based on the Landsat8 image, using both techniques.
 
@@ -382,7 +382,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::nam
 For more information about PostGIS map algebra
 
 ----------
-##Export data
+## Export data
 
 In the next examples we will export our rasters. Postgis can save rasters into diferent file formats. In the following examples we will use ST_AsTiff and ST_AsGDALRaster, also we will use pure Gdal functionality. 
 
@@ -435,7 +435,7 @@ Gdal as support for reading PostGIS rasters. You can use gdal_translate to expor
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
 ```
 
-##Publish data using Mapserver
+## Publish data using Mapserver
 
 Since GDAL supports PostGIS rasters, it is possible to publish a raster as a WMS. Please note that in this case it might be recommended to generate overviews for better performance.
 
