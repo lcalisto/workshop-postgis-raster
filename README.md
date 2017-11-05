@@ -189,17 +189,17 @@ St_Intersection is similar to ST_Clip, in ST_Clip the function returns a raster 
 
 ```sql
 create table schema_name.intersection as 
-SELECT r.rid,(ST_Intersection(t.geom,r.rast)).geom,(ST_Intersection(t.geom,r.rast)).val
-FROM rasters.landsat8 AS r, vectors.porto_freguesias AS t 
-WHERE t.freguesia ilike 'paranhos' and ST_Intersects(t.geom,r.rast)
+SELECT a.rid,(ST_Intersection(b.geom,a.rast)).geom,(ST_Intersection(b.geom,a.rast)).val
+FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
 ```
 
 **Example 2 - ST_DumpAsPolygons**
 
 ```sql
-SELECT r.rid,(ST_DumpAsPolygons(ST_Clip(r.rast,t.geom))).geom,(ST_DumpAsPolygons(ST_Clip(r.rast,t.geom))).val
-FROM rasters.landsat8 AS r, vectors.porto_freguesias AS t 
-WHERE t.freguesia ilike 'paranhos' and ST_Intersects(t.geom,r.rast)
+SELECT r.rid,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).geom,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).val
+FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
 ```
 
 Both functions return a set of geomvals, form more information about geomval datatype check the documentation: [https://postgis.net/docs/geomval.html](https://postgis.net/docs/geomval.html)
@@ -223,16 +223,16 @@ Lets now clip one "freguesia" from *vectors.porto_freguesias* table. This will h
 
 ```sql
 CREATE TABLE schema_name.paranhos_dem AS
-SELECT r.rid,ST_Clip(r.rast, t.geom,true)
-FROM rasters.dem AS r, vectors.porto_freguesias AS t
-WHERE t.freguesia ilike 'paranhos' and ST_Intersects(t.geom,r.rast)
+SELECT a.rid,ST_Clip(a.rast, b.geom,true)
+FROM rasters.dem AS a, vectors.porto_freguesias AS b
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
 ```
 **Example 3 - ST_Slope**
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope AS
-SELECT r.rid,ST_Slope(r.rast,1,'32BF','PERCENTAGE')
-FROM schema_name.paranhos_dem AS r
+SELECT a.rid,ST_Slope(a.rast,1,'32BF','PERCENTAGE')
+FROM schema_name.paranhos_dem AS a
 
 ```
 
@@ -240,21 +240,21 @@ FROM schema_name.paranhos_dem AS r
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope_reclass AS
-SELECT t.rid,ST_Reclass(t.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
-FROM schema_name.paranhos_slope AS t
+SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
+FROM schema_name.paranhos_slope AS a
 ```
 
 **Example 5 - ST_SummaryStats **
 
 ```sql
-SELECT st_summarystats(r.rast) AS stats
-FROM schema_name.paranhos_dem AS r
+SELECT st_summarystats(a.rast) AS stats
+FROM schema_name.paranhos_dem AS a
 ```
 **Example 6 - ST_SummaryStats with Union**
 
 ```sql
-SELECT st_summarystats(ST_Union(r.rast))
-FROM schema_name.paranhos_dem;
+SELECT st_summarystats(ST_Union(a.rast))
+FROM schema_name.paranhos_dem AS a;
 ```
 As we can see ST_SummaryStats returns a composite datatype. For more information about composite datatypes please check the documentation:
 [https://www.postgresql.org/docs/current/static/rowtypes.html](https://www.postgresql.org/docs/current/static/rowtypes.html)
@@ -263,8 +263,8 @@ As we can see ST_SummaryStats returns a composite datatype. For more information
 
 ```sql
 WITH t AS (
-	SELECT st_summarystats(ST_Union(r.rast)) AS stats
-	FROM schema_name.paranhos_dem AS r
+	SELECT st_summarystats(ST_Union(a.rast)) AS stats
+	FROM schema_name.paranhos_dem AS a
 )
 SELECT (stats).min,(stats).max,(stats).mean FROM t
 ```
@@ -274,10 +274,10 @@ SELECT (stats).min,(stats).max,(stats).mean FROM t
 In order to have the statistics by polygon "freguesia" we can perform a GROUP BY.
 ```sql
 WITH t AS (
-	SELECT t.freguesia AS freguesia, st_summarystats(ST_Union(ST_Clip(r.rast, t.geom,true))) AS stats
-	FROM rasters.dem AS r, vectors.porto_freguesias AS t
-	WHERE t.concelho ilike 'porto' and ST_Intersects(t.geom,r.rast)
-	group by t.freguesia
+	SELECT b.freguesia AS freguesia, st_summarystats(ST_Union(ST_Clip(a.rast, b.geom,true))) AS stats
+	FROM rasters.dem AS a, vectors.porto_freguesias AS b
+	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
+	group by b.freguesia
 )
 SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t
 ```
@@ -287,11 +287,11 @@ SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t
 ST_Value allow us to extract a pixel value from a point or a set of points. In this example we will extract the elevation of the  points from *vectors.lugares* table.
 
 ```sql
-SELECT l.name,st_value(r.rast,(ST_Dump(l.geom)).geom)
+SELECT b.name,st_value(a.rast,(ST_Dump(b.geom)).geom)
 FROM 
-rasters.dem r, vectors.lugares AS l
-WHERE ST_Intersects(r.rast,l.geom)
-ORDER BY l.name
+rasters.dem a, vectors.lugares AS b
+WHERE ST_Intersects(a.rast,b.geom)
+ORDER BY b.name
 ```
 
 
@@ -311,9 +311,9 @@ $$NDVI=\frac{(NIR-Red)}{(NIR+Red)}$$
 ```sql
 CREATE TABLE schema_name.porto_ndvi AS 
 WITH r AS (
-	SELECT r.rid,ST_Clip(r.rast, t.geom,true) AS rast
-	FROM rasters.landsat8 AS r, vectors.porto_freguesias AS t
-	WHERE t.concelho ilike 'porto' and ST_Intersects(t.geom,r.rast)
+	SELECT a.rid,ST_Clip(a.rast, b.geom,true) AS rast
+	FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b
+	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
 )
 SELECT
 	r.rid,ST_MapAlgebra(
@@ -357,9 +357,9 @@ Now it comes the map algebra query:
 ```sql
 CREATE TABLE schema_name.porto_ndvi2 AS 
 WITH r AS (
-	SELECT r.rid,ST_Clip(r.rast, t.geom,true) AS rast
-	FROM rasters.landsat8 AS r, vectors.porto_freguesias AS t
-	WHERE t.concelho ilike 'porto' and ST_Intersects(t.geom,r.rast)
+	SELECT a.rid,ST_Clip(a.rast, b.geom,true) AS rast
+	FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b
+	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
 )
 SELECT
 	r.rid,ST_MapAlgebra(
