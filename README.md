@@ -244,7 +244,7 @@ SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
 FROM schema_name.paranhos_slope AS a
 ```
 
-**Example 5 - ST_SummaryStats **
+**Example 5 - ST_SummaryStats**
 
 ```sql
 SELECT st_summarystats(a.rast) AS stats
@@ -408,7 +408,7 @@ ST_AsGDALRaster functions allow us to save the raster into any gdal supported fo
 ``` 
  to get a list of formats supported by your library.
 
-**Example 3 - Saving data into disk using *large object* (lo) **
+**Example 3 - Saving data into disk using *large object* (lo)**
 
 ```sql
 CREATE TABLE tmp_out AS
@@ -427,7 +427,7 @@ SELECT lo_unlink(loid)
 For more information on exporting rasters using PostGIS check the documentation:
 [https://postgis.net/docs/RT_reference.html#Raster_Outputs](https://postgis.net/docs/RT_reference.html#Raster_Outputs)
 
-**Example 4 - Using Gdal **
+**Example 4 - Using Gdal**
 
 Gdal as support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. if your raster as tiles you should use *mode=2* option.
 
@@ -441,7 +441,7 @@ Since GDAL supports PostGIS rasters, it is possible to publish a raster as a WMS
 
 The following example is a mapfile with a raster using standard options and a where clause.
 
-**Example 1 - Mapfile example **
+**Example 1 - Mapfile example**
 ```
 MAP
 	NAME 'map'
