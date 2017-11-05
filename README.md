@@ -46,14 +46,14 @@ We will use two examples, first we will use *raster2pgsql* to create a new .sql 
 
 **Example 1 - Elevation**
 
-```
+```bash
 mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C –M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem > mypath\dem.sql
 ```
 
 In example 2 we will load the data directly into the database.
 
 **Example 2 - Elevation**
-```
+```bash 
 mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C –M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem | psql –d postgis_raster –h localhost –U postgres –p 5432
 ```
 
@@ -61,7 +61,7 @@ Now lets load landsat 8 data with a 128x128 tile size directly into the database
 
 **Example 3 - Landsat 8**
 
-```
+```bash
 mypath\raster2pgsql.exe -s 3763 -N -32767 -t 128x128 -I -C –M -d mypath\rasters\Landsat8_L1TP_RGBN.TIF rasters.landsat8 | psql –d postgis_raster –h localhost –U postgres –p 5432
 
 ```
@@ -431,7 +431,7 @@ For more information on exporting rasters using PostGIS check the documentation:
 
 Gdal as support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. if your raster as tiles you should use *mode=2* option.
 
-```
+```bash
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
 ```
 
