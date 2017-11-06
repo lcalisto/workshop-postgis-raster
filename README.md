@@ -1,6 +1,6 @@
 
 
-# **Workshop PostGIS raster**
+# **Workshop PostGIS Raster**
 
 ### This workshop aims to explain and exemplify the usage of PostGIS raster.
 
@@ -444,7 +444,7 @@ Gdal as support for reading PostGIS rasters. You can use gdal_translate to expor
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
 ```
 
-## Publish data using Mapserver
+## Publish data using MapServer
 
 Since GDAL supports PostGIS rasters, it is possible to publish a raster as a WMS. Please note that in this case it might be recommended to generate overviews for better performance.
 
