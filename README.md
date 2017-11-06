@@ -123,7 +123,7 @@ In addition to the example above, St_Union also allow us operations in overlapin
 
 
 ----------
-## Create rasters from vectors (rasterize).
+## Create rasters from vectors (rasterize)
 
 In the next examples we will rasterize one vector and learn some important PostGIS raster functions.
 
@@ -178,7 +178,7 @@ WHERE a.concelho ilike 'porto';
 
 ----------
 
-## Convert rasters into vectors (vectorize).
+## Convert rasters into vectors (vectorize)
 
 Now we will use ST_Intersection and ST_DumpAsPolygons to convert from rasters to vectors. PostGIS as more available functions for this, please check [https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry](https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry) for more information.
 
