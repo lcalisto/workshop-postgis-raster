@@ -70,7 +70,7 @@ After loading the data please explore your database carefully, especially the sc
 
 ----------
 
-## Create rasters from other rasters
+## Create rasters from existing rasters & interact with vectors
 
 In the first example we'll see how to extract tiles that overlap a geometry. Optionally you can create a table with the result of the query, lets save this result in the *schema_name* schema so you can see the result in QGIS.
 
@@ -123,7 +123,7 @@ In addition to the example above, St_Union also allow us operations in overlapin
 
 
 ----------
-## Create rasters from vectors
+## Create rasters from vectors (rasterize).
 
 In the next examples we will rasterize one vector and learn some important PostGIS raster functions.
 
@@ -178,7 +178,7 @@ WHERE a.concelho ilike 'porto';
 
 ----------
 
-## Convert rasters into vectors
+## Convert rasters into vectors (vectorize).
 
 Now we will use ST_Intersection and ST_DumpAsPolygons to convert from rasters to vectors. PostGIS as more available functions for this, please check [https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry](https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry) for more information.
 
