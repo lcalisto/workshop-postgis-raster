@@ -438,7 +438,7 @@ For more information on exporting rasters using PostGIS check the documentation:
 
 **Example 4 - Using Gdal**
 
-Gdal as support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. if your raster as tiles you should use *mode=2* option.
+Gdal as support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. **If your raster as tiles you should use *mode=2* option.**
 
 ```bash
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
