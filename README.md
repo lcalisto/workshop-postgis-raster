@@ -488,7 +488,7 @@ MAP
 END
 ```
 
- You can access to this wms using the following URL: 
+ You can access this WMS using the following URL: 
 
 [http://54.37.13.53/mapservices/srtm](http://54.37.13.53/mapservices/srtm)
 
