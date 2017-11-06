@@ -2,8 +2,8 @@
 
 # **Workshop PostGIS raster**
 
-This workshop aims to explain and exemplify the usage of PostGIS raster.
----------------------------------------------------
+### This workshop aims to explain and exemplify the usage of PostGIS raster.
+
 
 
 ----------
