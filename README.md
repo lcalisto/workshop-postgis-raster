@@ -6,7 +6,6 @@ This workshop aims to explain and exemplify the usage of PostGIS raster.
 ---------------------------------------------------
 
 
-----------
 
 ## Create and restore the database
  
