@@ -81,7 +81,7 @@ In the first example we'll see how to extract tiles that overlap a geometry. Opt
 CREATE TABLE schema_name.intersects AS 
 SELECT a.rast, b.concelho
 FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE ST_Intersects(a.rast, b.geom) ANDw b.concelho ilike 'porto';
+WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto';
 ```
 
 The flowing 3 steps of code are for when we create new raster tables:
@@ -109,7 +109,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'intersects'::name,'rast'::name
 CREATE TABLE schema_name.clip AS 
 SELECT ST_Clip(a.rast, b.geom, true), b.concelho 
 FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE AND ST_Intersects(a.rast, b.geom), b.concelho like 'Porto'
+WHERE ST_Intersects(a.rast, b.geom) AND b.concelho like 'PORTO';
 ```
 **Example 3 - ST_Union**
 
@@ -117,7 +117,7 @@ WHERE AND ST_Intersects(a.rast, b.geom), b.concelho like 'Porto'
 CREATE TABLE schema_name.union AS 
 SELECT ST_Union(ST_Clip(a.rast, b.geom, true))
 FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
+WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast);
 ```
 
 In addition to the example above, St_Union also allow us operations in overlaping rasters based in a given predicate, namely FIRST LAST SUM COUNT MEAN and RANGE. For example if we have multiple precipitation rasters and we need an average of them, we can use  st_union or map_algebra. For more information about st_union please check the documentation: [https://postgis.net/docs/RT_ST_Union.html](https://postgis.net/docs/RT_ST_Union.html)
@@ -140,7 +140,7 @@ WITH r AS (
 )
 SELECT ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767) AS rast
 FROM vectors.porto_freguesias AS a, r
-WHERE a.concelho ilike 'porto'
+WHERE a.concelho ilike 'porto';
 ```
 In this example we used pixeltype '8BUI' 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers, signed integers are capable of representing negative integers as well. For more information about PostGIS raster types check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
 
@@ -158,7 +158,7 @@ WITH r AS (
 )
 SELECT st_union(ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767)) AS rast
 FROM vectors.porto_freguesias AS a, r
-WHERE a.concelho ilike 'porto'
+WHERE a.concelho ilike 'porto';
 ```
 **Example 3 - ST_Tile**
 
@@ -191,15 +191,16 @@ St_Intersection is similar to ST_Clip, in ST_Clip the function returns a raster 
 create table schema_name.intersection as 
 SELECT a.rid,(ST_Intersection(b.geom,a.rast)).geom,(ST_Intersection(b.geom,a.rast)).val
 FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 
 **Example 2 - ST_DumpAsPolygons**
 
 ```sql
-SELECT r.rid,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).geom,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).val
+CREATE TABLE schema_name.dumppolygons AS
+SELECT a.rid,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).geom,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).val
 FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 
 Both functions return a set of geomvals, form more information about geomval datatype check the documentation: [https://postgis.net/docs/geomval.html](https://postgis.net/docs/geomval.html)
@@ -215,7 +216,7 @@ In order to extract one band from a raster we can use ST_Band function.
 ```sql
 CREATE TABLE schema_name.landsat_nir AS
 SELECT rid, ST_Band(rast,4) AS rast
-FROM rasters.landsat8
+FROM rasters.landsat8;
 ```
 
 **Example 2 - ST_Clip**
@@ -223,16 +224,16 @@ Lets now clip one "freguesia" from *vectors.porto_freguesias* table. This will h
 
 ```sql
 CREATE TABLE schema_name.paranhos_dem AS
-SELECT a.rid,ST_Clip(a.rast, b.geom,true)
+SELECT a.rid,ST_Clip(a.rast, b.geom,true) as rast
 FROM rasters.dem AS a, vectors.porto_freguesias AS b
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast)
+WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 **Example 3 - ST_Slope**
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope AS
-SELECT a.rid,ST_Slope(a.rast,1,'32BF','PERCENTAGE')
-FROM schema_name.paranhos_dem AS a
+SELECT a.rid,ST_Slope(a.rast,1,'32BF','PERCENTAGE') as rast
+FROM schema_name.paranhos_dem AS a;
 
 ```
 
@@ -241,14 +242,14 @@ FROM schema_name.paranhos_dem AS a
 ```sql
 CREATE TABLE schema_name.paranhos_slope_reclass AS
 SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
-FROM schema_name.paranhos_slope AS a
+FROM schema_name.paranhos_slope AS a;
 ```
 
 **Example 5 - ST_SummaryStats**
 
 ```sql
 SELECT st_summarystats(a.rast) AS stats
-FROM schema_name.paranhos_dem AS a
+FROM schema_name.paranhos_dem AS a;
 ```
 **Example 6 - ST_SummaryStats with Union**
 
@@ -266,7 +267,7 @@ WITH t AS (
 	SELECT st_summarystats(ST_Union(a.rast)) AS stats
 	FROM schema_name.paranhos_dem AS a
 )
-SELECT (stats).min,(stats).max,(stats).mean FROM t
+SELECT (stats).min,(stats).max,(stats).mean FROM t;
 ```
 
 **Example 8 - ST_SummaryStats with GROUP BY**
@@ -279,7 +280,7 @@ WITH t AS (
 	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
 	group by b.freguesia
 )
-SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t
+SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t;
 ```
 
 **Example 9 - ST_Value**
@@ -291,7 +292,7 @@ SELECT b.name,st_value(a.rast,(ST_Dump(b.geom)).geom)
 FROM 
 rasters.dem a, vectors.lugares AS b
 WHERE ST_Intersects(a.rast,b.geom)
-ORDER BY b.name
+ORDER BY b.name;
 ```
 
 
@@ -303,7 +304,7 @@ There are two ways to use Map algebra in PostGIS. One is to use an expression an
 
 The NDVI formula:
 
-$$NDVI=\frac{(NIR-Red)}{(NIR+Red)}$$
+NDVI=(NIR-Red)/(NIR+Red)
 
 
 **Example 1 - The Map Algebra Expression**
