@@ -380,7 +380,16 @@ USING gist (ST_ConvexHull(rast));
 ```sql
 SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::name);
 ```
-For more information about PostGIS map algebra
+For more information about PostGIS map algebra please check the documentation:
+
+MapAlgebra with expression:
+[https://postgis.net/docs/RT_ST_MapAlgebra_expr.html](https://postgis.net/docs/RT_ST_MapAlgebra_expr.html)
+
+MapAlgebra with callback function:
+[https://postgis.net/docs/RT_ST_MapAlgebra.html](https://postgis.net/docs/RT_ST_MapAlgebra.html)
+
+
+
 
 ----------
 ## Export data
