@@ -35,13 +35,13 @@ Please explore the database before continue.
 ----------
 ## Loading rasters
 
-We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. 
-We will use software [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader) , please check software documentation for more information.
+We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. This files are located inside the [rasters](https://github.com/lcalisto/workshop-postgis-raster/tree/master/rasters) folder in this repository.
+For this operation we'll use [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader) , please check software documentation for more information.
 
 
 #### Load the elevation data
 
-We will use two examples, first we will use *raster2pgsql* to create a new .sql file. Later we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path were *raster2pgsql* will create the *dem.sql* file.
+Starting with the first two examples, to begin we'll use *raster2pgsql* to create a new .sql file. Later we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path were *raster2pgsql* will create the *dem.sql* file.
 
 **Example 1 - Elevation**
 
