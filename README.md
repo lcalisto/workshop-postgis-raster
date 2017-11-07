@@ -9,7 +9,7 @@
 ----------
 ## Create and restore the database
  
- In order to start the workshop we will load and existing database. 
+ In order to start the workshop we will load an existing database. 
 
 Using pgAdmin please create a new, empty database and then restore the existing dump ***postgis_raster.backup*** from this repository into the new recently created database.
 
@@ -17,7 +17,7 @@ Using pgAdmin please create a new, empty database and then restore the existing 
 ----------
 ## Database structure
 
-The restored database consists in the folowing structure:
+The restored database consists of the folowing structure:
 
  - schema_name *(you should rename it with your name)*
  - public
@@ -30,18 +30,18 @@ The restored database consists in the folowing structure:
 Schema schema_name and rasters are empty,  you will add tables to them as you advance with the exercises.
 
 
-Please explore the database before continue.
+Please explore the database before continuing.
 
 ----------
 ## Loading rasters
 
-We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. This files are located inside the [rasters](https://github.com/lcalisto/workshop-postgis-raster/tree/master/rasters) folder in this repository.
-For this operation we'll use [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader) , please check software documentation for more information.
+We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. These files are located inside the [rasters](https://github.com/lcalisto/workshop-postgis-raster/tree/master/rasters) folder in this repository.
+For this operation, we'll use [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader), please check software documentation for more information.
 
 
 #### Load the elevation data
 
-Starting with the first two examples, to begin we'll use *raster2pgsql* to create a new .sql file. Later we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path were *raster2pgsql* will create the *dem.sql* file.
+Starting with the first two examples, to begin we'll use *raster2pgsql* to create a new .sql file. Later, we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path where *raster2pgsql* will create the *dem.sql* file.
 
 **Example 1 - Elevation**
 
@@ -49,14 +49,14 @@ Starting with the first two examples, to begin we'll use *raster2pgsql* to creat
 mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C –M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem > mypath\dem.sql
 ```
 
-In example 2 we will load the data directly into the database.
+In example 2, we will load the data directly into the database.
 
 **Example 2 - Elevation**
 ```bash 
 mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C –M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem | psql –d postgis_raster –h localhost –U postgres –p 5432
 ```
 
-Now lets load landsat 8 data with a 128x128 tile size directly into the database.
+Now let's load landsat 8 data with a 128x128 tile size directly into the database.
 
 **Example 3 - Landsat 8**
 
@@ -65,14 +65,14 @@ mypath\raster2pgsql.exe -s 3763 -N -32767 -t 128x128 -I -C –M -d mypath\raster
 
 ```
 
-After loading the data please explore your database carefully, especially the schema *rasters*, also have a look at the **view** *public.raster_columns*.
+After loading the data please explore your database carefully, especially the schema *rasters*, and also take a look at the **view** *public.raster_columns*.
 
 
 ----------
 
 ## Create rasters from existing rasters & interact with vectors
 
-In the first example we'll see how to extract tiles that overlap a geometry. Optionally you can create a table with the result of the query, lets save this result in the *schema_name* schema so you can see the result in QGIS.
+In the first example, we'll see how to extract tiles that overlap a geometry. Optionally, you can create a table with the result of the query, let's save this result in the *schema_name* schema so you can view the result in QGIS.
 
 **Example 1 - ST_Intersects**
 
@@ -83,7 +83,7 @@ FROM rasters.dem AS a, vectors.porto_freguesias AS b
 WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto';
 ```
 
-The flowing 3 steps of code are for when we create new raster tables:
+The flowing three steps of code are used to create new raster tables:
 
 A - add serial primary key:
 
@@ -97,7 +97,7 @@ B - create spatial index:
 CREATE INDEX idx_intersects_rast_gist ON schema_name.intersects
 USING gist (ST_ConvexHull(rast));
 ```
-C - and for last we can add the raster constraints:
+C - and at last, we can add the raster constraints:
 ```sql
 -- schema::name table_name::name raster_column::name
 SELECT AddRasterConstraints('schema_name'::name, 'intersects'::name,'rast'::name);
@@ -119,17 +119,17 @@ FROM rasters.dem AS a, vectors.porto_freguesias AS b
 WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast);
 ```
 
-In addition to the example above, St_Union also allow us operations in overlaping rasters based in a given predicate, namely FIRST LAST SUM COUNT MEAN and RANGE. For example if we have multiple precipitation rasters and we need an average of them, we can use  st_union or map_algebra. For more information about st_union please check the documentation: [https://postgis.net/docs/RT_ST_Union.html](https://postgis.net/docs/RT_ST_Union.html)
+In addition to the example above, st_union also allows us operations on overlapping rasters based on a given aggregate function, namely FIRST LAST SUM COUNT MEAN or RANGE. For example, if we have multiple precipitation rasters and we need an average value, we can use st_union or map_algebra. For more information about st_union please check the documentation: [https://postgis.net/docs/RT_ST_Union.html](https://postgis.net/docs/RT_ST_Union.html)
 
 
 ----------
 ## Create rasters from vectors (rasterize)
 
-In the next examples we will rasterize one vector and learn some important PostGIS raster functions.
+In the next examples, we will rasterize one vector and learn some important PostGIS raster functions.
 
 **Example 1 - ST_AsRaster**
 
-First lets use *ST_AsRaster* to rasterize table freguesias from Porto with the same spatial characteristics: pixel size, extents etc. 
+First, let us use *ST_AsRaster* to rasterize table freguesias from the city of Porto with the same spatial characteristics: pixel size, extents etc. 
 
 ```sql
 CREATE TABLE schema_name.porto_freguesias AS
@@ -141,12 +141,12 @@ SELECT ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767) AS rast
 FROM vectors.porto_freguesias AS a, r
 WHERE a.concelho ilike 'porto';
 ```
-In this example we used pixeltype '8BUI' 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers, signed integers are capable of representing negative integers as well. For more information about PostGIS raster types check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
+In this example, we use pixeltype '8BUI' makring an 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers; signed integers are capable of representing negative integers as well. For more information about PostGIS raster types, check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
 
 
 **Example 2 - ST_Union**
 
-In this example we will use ST_Union to union all the rasterized polygons into one single raster.
+In this example, we will use ST_Union to union all the rasterized polygons into one single raster.
 
 ```sql
 DROP TABLE schema_name.porto_freguesias;
@@ -161,7 +161,7 @@ WHERE a.concelho ilike 'porto';
 ```
 **Example 3 - ST_Tile**
 
-After having one single raster we can generate tiles with *ST_Tile* function.
+After having obtained a single raster, we can generate tiles with the *ST_Tile* function.
 
 ```sql
 DROP TABLE schema_name.porto_freguesias; --> drop table porto_freguesias first
@@ -180,11 +180,11 @@ WHERE a.concelho ilike 'porto';
 
 ## Convert rasters into vectors (vectorize)
 
-Now we will use ST_Intersection and ST_DumpAsPolygons to convert from rasters to vectors. PostGIS as more available functions for this, please check [https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry](https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry) for more information.
+Now we will use ST_Intersection and ST_DumpAsPolygons to convert from rasters to vectors. PostGIS has more available functions for this, please check [https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry](https://postgis.net/docs/RT_reference.html#Raster_Processing_Geometry) for more information.
 
 **Example 1 - ST_Intersection**
 
-St_Intersection is similar to ST_Clip, in ST_Clip the function returns a raster while in ST_Intersection the function returns a set of geometry-pixelvalue pairs, this function converts the raster into a vector before the actual "clip".  ST_Intersection is usually slower that ST_Clip, it may be wise to perform a ST_Clip in the raster before the ST_Intersection.
+St_Intersection is similar to ST_Clip. In ST_Clip the function returns a raster while in ST_Intersection the function returns a set of geometry-pixel value pairs, as this function converts the raster into a vector before the actual "clip."  ST_Intersection is usually slower than ST_Clip, it may be wise to perform an ST_Clip in the raster before executing ST_Intersection.
 
 ```sql
 create table schema_name.intersection as 
@@ -202,7 +202,7 @@ FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b
 WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 
-Both functions return a set of geomvals, form more information about geomval datatype check the documentation: [https://postgis.net/docs/geomval.html](https://postgis.net/docs/geomval.html)
+Both functions return a set of geomvals, for more information about the geomval data type check the documentation: [https://postgis.net/docs/geomval.html](https://postgis.net/docs/geomval.html)
 
 
 ----------
@@ -210,7 +210,7 @@ Both functions return a set of geomvals, form more information about geomval dat
 
 **Example 1 - ST_Band**
 
-In order to extract one band from a raster we can use ST_Band function.
+To extract one band from a raster we can use the ST_Band function.
 
 ```sql
 CREATE TABLE schema_name.landsat_nir AS
@@ -219,7 +219,7 @@ FROM rasters.landsat8;
 ```
 
 **Example 2 - ST_Clip**
-Lets now clip one "freguesia" from *vectors.porto_freguesias* table. This will help in the next examples.
+Let's now clip one "freguesia" from the *vectors.porto_freguesias* table. This will help in the next examples.
 
 ```sql
 CREATE TABLE schema_name.paranhos_dem AS
@@ -256,7 +256,7 @@ FROM schema_name.paranhos_dem AS a;
 SELECT st_summarystats(ST_Union(a.rast))
 FROM schema_name.paranhos_dem AS a;
 ```
-As we can see ST_SummaryStats returns a composite datatype. For more information about composite datatypes please check the documentation:
+As we can see, ST_SummaryStats returns a composite data type. For more information about composite data types, please check the documentation:
 [https://www.postgresql.org/docs/current/static/rowtypes.html](https://www.postgresql.org/docs/current/static/rowtypes.html)
 
 **Example 7 - ST_SummaryStats with better control over composite type**
@@ -284,7 +284,7 @@ SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t;
 
 **Example 9 - ST_Value**
 
-ST_Value allow us to extract a pixel value from a point or a set of points. In this example we will extract the elevation of the  points from *vectors.lugares* table.
+ST_Value allows us to extract a pixel value from a point or a set of points. In this example, we  extract the elevation of the points that are in the *vectors.lugares* table.
 
 ```sql
 SELECT b.name,st_value(a.rast,(ST_Dump(b.geom)).geom)
@@ -299,9 +299,9 @@ ORDER BY b.name;
 
 ## Map Algebra
 
-There are two ways to use Map algebra in PostGIS. One is to use an expression and the other is to use a callback function. In the following examples we will create a NDVI based on the Landsat8 image, using both techniques.
+There are two ways to use Map algebra in PostGIS. One is to use an expression and the other is to use a callback function. In the following examples, we will create NDVI values based on the Landsat8 image, using both techniques.
 
-The NDVI formula:
+The NDVI formula is well-known:
 
 NDVI=(NIR-Red)/(NIR+Red)
 
@@ -323,7 +323,7 @@ SELECT
 	) AS rast
 FROM r;
 ```
-After the table creation we will create spatial index
+After the table creation, we will create a spatial index
 ```sql
 CREATE INDEX idx_porto_ndvi_rast_gist ON schema_name.porto_ndvi
 USING gist (ST_ConvexHull(rast));
@@ -335,7 +335,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi'::name,'rast'::name
 
 **Example 2 - The callback Function**
 
-Using a callback function first we create the callback function. In this function is were the magic happens!!
+Using a callback function first we create the callback function. In this function, is where the magic happens!!
 
 ```sql
 create or replace function schema_name.ndvi(
@@ -353,7 +353,7 @@ $$
 LANGUAGE 'plpgsql' IMMUTABLE COST 1000;
 ```
 
-Now it comes the map algebra query:
+Now comes the map algebra query:
 ```sql
 CREATE TABLE schema_name.porto_ndvi2 AS 
 WITH r AS (
@@ -370,16 +370,16 @@ SELECT
 FROM r;
 ```
 
-Lets add the spatial index ...
+Let's add the spatial index also ...
 ```sql
 CREATE INDEX idx_porto_ndvi2_rast_gist ON schema_name.porto_ndvi2
 USING gist (ST_ConvexHull(rast));
 ```
-... and the raster constrains.
+... and the raster constraints.
 ```sql
 SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::name);
 ```
-For more information about PostGIS map algebra please check the documentation:
+For more information about PostGIS map algebra, please check the documentation:
 
 MapAlgebra with expression:
 [https://postgis.net/docs/RT_ST_MapAlgebra_expr.html](https://postgis.net/docs/RT_ST_MapAlgebra_expr.html)
@@ -393,7 +393,7 @@ MapAlgebra with callback function:
 ----------
 ## Export data
 
-In the next examples we will export our rasters. Postgis can save rasters into diferent file formats. In the following examples we will use ST_AsTiff and ST_AsGDALRaster, also we will use pure Gdal functionality. 
+In the next examples, we will export our rasters. Postgis can save rasters in diferent file formats. In the following examples, we use ST_AsTiff and ST_AsGDALRaster, but also we will use pure Gdal functionality. 
 
 **Example 1 - ST_AsTiff**
 
@@ -433,12 +433,12 @@ SELECT lo_unlink(loid)
   FROM tmp_out; --> Delete the large object.
 ```
 
-For more information on exporting rasters using PostGIS check the documentation:
+For more information on exporting rasters using PostGIS, check the documentation:
 [https://postgis.net/docs/RT_reference.html#Raster_Outputs](https://postgis.net/docs/RT_reference.html#Raster_Outputs)
 
 **Example 4 - Using Gdal**
 
-Gdal as support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. **If your raster as tiles you should use *mode=2* option.**
+Gdal has support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. **If your raster as tiles you should use *mode=2* option.**
 
 ```bash
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
@@ -446,7 +446,7 @@ gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localh
 
 ## Publish data using MapServer
 
-Since GDAL supports PostGIS rasters, it is possible to publish a raster as a WMS. Please note that in this case it might be recommended to generate overviews for better performance.
+Since GDAL supports PostGIS rasters, it is possible to publish a raster as a WMS. Please note that in this case it is recommended to generate overviews for better performance.
 
 The following example is a mapfile with a raster using standard options and a where clause.
 
