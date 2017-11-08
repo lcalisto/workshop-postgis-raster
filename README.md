@@ -238,7 +238,7 @@ WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 **Example 3 - ST_Slope**
 
-Now we will generate slope in percentage using the previous generated table (elevation).
+Now we will generate slope using the previous generated table (elevation).
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope AS
