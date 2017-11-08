@@ -76,6 +76,8 @@ In the first example, we'll see how to extract tiles that overlap a geometry. Op
 
 **Example 1 - ST_Intersects**
 
+Intersecting a raster with a vector.
+
 ```sql
 CREATE TABLE schema_name.intersects AS 
 SELECT a.rast, b.concelho
@@ -83,7 +85,7 @@ FROM rasters.dem AS a, vectors.porto_freguesias AS b
 WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto';
 ```
 
-The flowing three steps of code are used to create new raster tables:
+The flowing three steps of code are recomended when creating new raster tables:
 
 A - add serial primary key:
 
@@ -104,6 +106,8 @@ SELECT AddRasterConstraints('schema_name'::name, 'intersects'::name,'rast'::name
 ```
 **Example 2 - ST_Clip**
 
+Clipping a raster based on a vector.
+
 ```sql
 CREATE TABLE schema_name.clip AS 
 SELECT ST_Clip(a.rast, b.geom, true), b.concelho 
@@ -111,6 +115,8 @@ FROM rasters.dem AS a, vectors.porto_freguesias AS b
 WHERE ST_Intersects(a.rast, b.geom) AND b.concelho like 'PORTO';
 ```
 **Example 3 - ST_Union**
+
+Union of multiple tiles into one single raster.
 
 ```sql
 CREATE TABLE schema_name.union AS 
@@ -195,6 +201,8 @@ WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 
 **Example 2 - ST_DumpAsPolygons**
 
+ST_DumpAsPolygons converts a raster into a vector (polygons).
+
 ```sql
 CREATE TABLE schema_name.dumppolygons AS
 SELECT a.rid,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).geom,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).val
@@ -219,6 +227,7 @@ FROM rasters.landsat8;
 ```
 
 **Example 2 - ST_Clip**
+
 Let's now clip one "freguesia" from the *vectors.porto_freguesias* table. This will help in the next examples.
 
 ```sql
@@ -229,6 +238,8 @@ WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 **Example 3 - ST_Slope**
 
+Now we will generate slope in percentage using the previous generated table (elevation).
+
 ```sql
 CREATE TABLE schema_name.paranhos_slope AS
 SELECT a.rid,ST_Slope(a.rast,1,'32BF','PERCENTAGE') as rast
@@ -238,6 +249,8 @@ FROM schema_name.paranhos_dem AS a;
 
 **Example 4 - ST_Reclass**
 
+In order to reclass a raster we can use ST_Reclass function.
+
 ```sql
 CREATE TABLE schema_name.paranhos_slope_reclass AS
 SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
@@ -246,11 +259,15 @@ FROM schema_name.paranhos_slope AS a;
 
 **Example 5 - ST_SummaryStats**
 
+In order to compute statistics from our raster we can use ST_SummaryStats function. In this example we will generate **statistics per tile**.
+
 ```sql
 SELECT st_summarystats(a.rast) AS stats
 FROM schema_name.paranhos_dem AS a;
 ```
 **Example 6 - ST_SummaryStats with Union**
+
+Using union we can generate one statistics of the selected raster.
 
 ```sql
 SELECT st_summarystats(ST_Union(a.rast))
@@ -272,6 +289,7 @@ SELECT (stats).min,(stats).max,(stats).mean FROM t;
 **Example 8 - ST_SummaryStats with GROUP BY**
 
 In order to have the statistics by polygon "freguesia" we can perform a GROUP BY.
+
 ```sql
 WITH t AS (
 	SELECT b.freguesia AS freguesia, st_summarystats(ST_Union(ST_Clip(a.rast, b.geom,true))) AS stats
@@ -395,7 +413,13 @@ MapAlgebra with callback function:
 
 In the next examples, we will export our rasters. Postgis can save rasters in diferent file formats. In the following examples, we use ST_AsTiff and ST_AsGDALRaster, but also we will use pure Gdal functionality. 
 
+**Example 0 - Using QGIS**
+
+If you load the raster table/view in QGIS then you will be able to save/export the raster layer into any GDAL supported format using QGIS interface.
+
 **Example 1 - ST_AsTiff**
+
+ST_AsTiff function **does not save the output into the disk***, instead outputs is the binary representation of the tiff, this can be very usefull for webplatforms; scripts etc. were the developer can control what to do with the binary, for example save it into the disk or just display it.
 
 ```sql
 SELECT ST_AsTiff(ST_Union(rast))
@@ -404,6 +428,8 @@ FROM schema_name.porto_ndvi;
 
  
 **Example 2 - ST_AsGDALRaster**
+
+Like ST_AsTiff function ST_AsGDALRaster **does not save the output into the disk***, instead outputs is the binary representation of the any GDAL format.
 
 ```sql
 SELECT ST_AsGDALRaster(ST_Union(rast), 'GTiff',  ARRAY['COMPRESS=DEFLATE', 'PREDICTOR=2', 'PZLEVEL=9'])
