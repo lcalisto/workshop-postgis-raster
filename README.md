@@ -152,7 +152,7 @@ In this example, we use pixeltype '8BUI' makring an 8-bit unsigned integer. Unsi
 
 **Example 2 - ST_Union**
 
-In this example, we will use ST_Union to union all the rasterized polygons into one single raster.
+In this example, we will use *ST_Union* to union all the rasters (table rows) into one single raster.
 
 ```sql
 DROP TABLE schema_name.porto_freguesias;
@@ -201,7 +201,7 @@ WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 
 **Example 2 - ST_DumpAsPolygons**
 
-ST_DumpAsPolygons converts a raster into a vector (polygons).
+*ST_DumpAsPolygons* converts a raster into a vector (polygons).
 
 ```sql
 CREATE TABLE schema_name.dumppolygons AS
@@ -218,7 +218,7 @@ Both functions return a set of geomvals, for more information about the geomval 
 
 **Example 1 - ST_Band**
 
-To extract one band from a raster we can use the ST_Band function.
+To extract one band from a raster we can use the *ST_Band* function.
 
 ```sql
 CREATE TABLE schema_name.landsat_nir AS
@@ -249,7 +249,7 @@ FROM schema_name.paranhos_dem AS a;
 
 **Example 4 - ST_Reclass**
 
-In order to reclass a raster we can use ST_Reclass function.
+In order to reclass a raster we can use *ST_Reclass* function.
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope_reclass AS
@@ -259,7 +259,7 @@ FROM schema_name.paranhos_slope AS a;
 
 **Example 5 - ST_SummaryStats**
 
-In order to compute statistics from our raster we can use ST_SummaryStats function. In this example we will generate **statistics per tile**.
+In order to compute statistics from our raster we can use *ST_SummaryStats* function. In this example we will generate **statistics per tile**.
 
 ```sql
 SELECT st_summarystats(a.rast) AS stats
@@ -302,7 +302,7 @@ SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t;
 
 **Example 9 - ST_Value**
 
-ST_Value allows us to extract a pixel value from a point or a set of points. In this example, we  extract the elevation of the points that are in the *vectors.lugares* table.
+*ST_Value* function allows us to extract a pixel value from a point or a set of points. In this example, we extract the elevation of the points that are in the *vectors.lugares* table. Because the points geometry is multipoint and *ST_Value* function requires single point geometry, we convert from multi point into single point geometry using *(ST_Dump(b.geom)).geom*.
 
 ```sql
 SELECT b.name,st_value(a.rast,(ST_Dump(b.geom)).geom)
