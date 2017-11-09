@@ -29,6 +29,19 @@ The restored database consists of the folowing structure:
 
 Schema schema_name and rasters are empty,  you will add tables to them as you advance with the exercises.
 
+Here is a quick explanation of the attributes and table names you may see:
+
+Freguesia = Parish
+
+Concelho = Municipality
+
+Distrito = District/region
+
+Ferrovia = Railroad
+
+Lugares = Places
+
+Therefore the table ```vectors.porto_freguesias``` has all the parishes that exist in the district of Porto, Portugal.
 
 Please explore the database before continuing.
 
