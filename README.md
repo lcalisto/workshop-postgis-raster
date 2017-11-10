@@ -528,8 +528,8 @@ END
 
  You can access this WMS using the following URL: 
 
-[http://54.37.13.53/mapservices/srtm](http://54.37.13.53/mapservices/srtm)
+[http://vps470543.ovh.net/mapservices/srtm](http://vps470543.ovh.net/mapservices/srtm)
 
 or using the browser with:
 
-[http://54.37.13.53/mapservices/srtm?layer=srtm&mode=map](http://54.37.13.53/mapservices/srtm?layer=srtm&mode=map)
+[http://vps470543.ovh.net/mapservices/srtm?layer=srtm&mode=map](http://vps470543.ovh.net/mapservices/srtm?layer=srtm&mode=map)
