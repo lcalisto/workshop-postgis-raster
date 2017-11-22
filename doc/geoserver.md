@@ -23,7 +23,7 @@ Restart Geoserver.
 
 ### Step 1: configuration files
 
-We need some configuration files for the ImageMosaicJDBC plugin.
+We need some configuration files for the [ImageMosaicJDBC](http://docs.geoserver.org/stable/en/user/data/raster/imagemosaicjdbc.html) plugin.
 
 Put these files in our `GEOSERVER_DATA_DIR/data`.
  
@@ -83,7 +83,7 @@ File `mosaicpgraster.pgraster.xml`
 
 ### Step 2: Supporting tables and data
 
-We some one additional table on our `postgis_raster` database.
+We need one additional table on our `postgis_raster` database to store simple mosaic metadata.
 
 ```sql
 CREATE TABLE public.mosaic (
@@ -99,7 +99,7 @@ CREATE TABLE public.mosaic (
 );
 ```
 
-Add our table to this matadata table:
+Add our raster to this `mosaic` metadata table, assigning the name `mosaicpgraster`:
 
 ```sql
 insert into mosaic (name,tiletable) values ('mosaicpgraster','rasters.dem');
@@ -107,7 +107,7 @@ insert into mosaic (name,tiletable) values ('mosaicpgraster','rasters.dem');
 
 ### Step 3: Create a new datastore
 
-Create a new ImageMosaicJDBC store.
+Create a new `ImageMosaicJDBC` store.
 
 For the URL, use the file we created: `file:data/mosaicpgraster.pgraster.xml`.
 
