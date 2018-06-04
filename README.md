@@ -325,6 +325,38 @@ WHERE ST_Intersects(a.rast,b.geom)
 ORDER BY b.name;
 ```
 
+### Info about Topographic Position Index (TPI)
+
+TPI compares the elevation of each cell in a DEM to the mean elevation of a specified neighborhood around that cell. Positive values represent locations that are higher than the average of their surroundings, as defined by the neighborhood (ridges). Negative values represent locations that are lower than their surroundings (valleys). TPI values near zero are either flat areas (where the slope is near zero) or areas of constant slope.
+More information about TPI can be found [here.](http://www.jennessent.com/downloads/tpi-poster-tnc_18x22.pdf)
+
+
+**Example 10 - ST_TPI**
+
+*ST_Value* function allows us to create a TPI map from an elevation DEM. Current PostGIS version can calculate TPI of one pixel using a neighborhood around that cell of one cell only. 
+In this example, we are going to compute the TPI using *rasters.dem* table as input. Because this table as a resolution of 30 meters, and because this TPI only uses one neighborhood cell for the computations, we call it TPI30. We can create a table with the result of the query in *schema_name* schema so you can view the result in QGIS.
+
+```sql
+create table schema_name.tpi30 as
+select ST_TPI(a.rast,1) as rast
+from rasters.dem a;
+```
+After the table creation, we will create a spatial index
+```sql
+CREATE INDEX idx_tpi30_rast_gist ON schema_name.tpi30
+USING gist (ST_ConvexHull(rast));
+```
+Add constraints
+```sql
+SELECT AddRasterConstraints('schema_name'::name, 'tpi30'::name,'rast'::name);
+```
+
+
+### First challenge
+
+Time to put together what you have learned so far to solve a spatial problem. 
+
+The previous query can take more than one minute to process. As you can imagine that some queries can take too long to process. In order to improve processing time sometimes we can restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (concelho) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
 
 ----------
 
@@ -538,3 +570,22 @@ or using the browser with:
 
 Follow our [guide to publish the raster using GeoServer](doc/geoserver.md).
 
+----------
+
+## First challenge solution
+
+```sql
+create table schema_name.tpi30_porto as
+SELECT ST_TPI(a.rast,1) as rast
+FROM rasters.dem AS a, vectors.porto_freguesias AS b 
+WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto'
+```
+Let's add the spatial index ...
+```sql
+CREATE INDEX idx_tpi30_porto_rast_gist ON schema_name.tpi30_porto
+USING gist (ST_ConvexHull(rast));
+```
+... and the raster constraints.
+```sql
+SELECT AddRasterConstraints('schema_name'::name, 'tpi30_porto'::name,'rast'::name);
+```
