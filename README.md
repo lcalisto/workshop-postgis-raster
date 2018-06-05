@@ -448,7 +448,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::nam
 
 **Example 3 - The TPI functions**
 
-Current implemented TPI function inside POSTGIS uses map algebra with a callback function. We can analyse thouse functions to better understand map algebra.
+Current implemented TPI function inside PostGIS uses map algebra with a callback function. We can analyse thouse functions to better understand map algebra.
 In *public* schema functions there are two functions for TPI:
 
 1. *public._st_tpi4ma* - The callback function used in map algebra.
@@ -468,7 +468,7 @@ MapAlgebra with callback function:
 
 **New custom implementation of TPI**
 
-Current POSTGIS implementation of TPI using *ST_TPI*, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
+Current PostGIS implementation of TPI using *ST_TPI*, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
 
 
 ----------
