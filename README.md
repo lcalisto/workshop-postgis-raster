@@ -468,7 +468,7 @@ MapAlgebra with callback function:
 
 **New custom implementation of TPI**
 
-Current POSTGIS implementation of TPI using ST_TPI, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
+Current POSTGIS implementation of TPI using *ST_TPI*, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
 
 
 ----------
