@@ -356,7 +356,9 @@ SELECT AddRasterConstraints('schema_name'::name, 'tpi30'::name,'rast'::name);
 
 Time to put together what you have learned so far to solve a spatial problem. 
 
-The previous query can take more than one minute to process. As you can imagine that some queries can take too long to process. In order to improve processing time sometimes we can restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (concelho) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
+The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (concelho) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
+
+In the end check the result in QGIS.
 
 ----------
 
@@ -442,7 +444,21 @@ USING gist (ST_ConvexHull(rast));
 ```sql
 SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::name);
 ```
-For more information about PostGIS map algebra, please check the documentation:
+
+
+**Example 3 - The TPI functions**
+
+Current implemented TPI function inside POSTGIS uses map algebra with a callback function. We can analyse thouse functions to better understand map algebra.
+In *public* schema functions there are two functions for TPI:
+
+1. *public._st_tpi4ma* - The callback function used in map algebra.
+
+2. *public.st_tpi* - The TPI function that calls the previous function. Please note that there are two *st_tpi* functions, they diverge in the number of inputs they allow. In the end both functions perform the same action.
+
+Take some time to analyse these functions and how they perform.
+
+
+**For more information about PostGIS map algebra, please check the documentation:**
 
 MapAlgebra with expression:
 [https://postgis.net/docs/RT_ST_MapAlgebra_expr.html](https://postgis.net/docs/RT_ST_MapAlgebra_expr.html)
@@ -450,7 +466,9 @@ MapAlgebra with expression:
 MapAlgebra with callback function:
 [https://postgis.net/docs/RT_ST_MapAlgebra.html](https://postgis.net/docs/RT_ST_MapAlgebra.html)
 
+**New custom implementation of TPI**
 
+Current POSTGIS implementation of TPI using ST_TPI, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
 
 
 ----------
