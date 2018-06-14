@@ -23,25 +23,13 @@ The restored database consists of the folowing structure:
  - public
  - rasters
  - vectors
-	 - ferrovia (lines)
-	 - lugares (points)
-	 - porto_freguesias (polygons)
+	 - railroad (lines)
+	 - places (points)
+	 - porto_parishes (polygons)
 
 Schema schema_name and rasters are empty,  you will add tables to them as you advance with the exercises.
 
-Here is a quick explanation of the attributes and table names you may see:
-
-Freguesia = Parish
-
-Concelho = Municipality
-
-Distrito = District/region
-
-Ferrovia = Railroad
-
-Lugares = Places
-
-Therefore the table ```vectors.porto_freguesias``` has all the parishes that exist in the district of Porto, Portugal.
+Table ```vectors.porto_parishes``` has all the **parishes that exist in the district of Porto, Portugal**.
 
 Please explore the database before continuing.
 
@@ -85,7 +73,7 @@ After loading the data please explore your database carefully, especially the sc
 
 ## Create rasters from existing rasters & interact with vectors
 
-In the first example, we'll see how to extract tiles that overlap a geometry. Optionally, you can create a table with the result of the query, let's save this result in the *schema_name* schema so you can view the result in QGIS.
+In the first example, we'll see how to extract tiles that overlap a geometry. Optionally, you can create a table with the result of the query, let's save this result in your schema so you can view the result in QGIS. Please change *schema_name* by the schema you want to use, e.g. your name.
 
 **Example 1 - ST_Intersects**
 
@@ -93,9 +81,9 @@ Intersecting a raster with a vector.
 
 ```sql
 CREATE TABLE schema_name.intersects AS 
-SELECT a.rast, b.concelho
-FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto';
+SELECT a.rast, b.municipality
+FROM rasters.dem AS a, vectors.porto_parishes AS b 
+WHERE ST_Intersects(a.rast, b.geom) AND b.municipality ilike 'porto';
 ```
 
 The flowing three steps of code are recomended when creating new raster tables:
@@ -123,9 +111,9 @@ Clipping a raster based on a vector.
 
 ```sql
 CREATE TABLE schema_name.clip AS 
-SELECT ST_Clip(a.rast, b.geom, true), b.concelho 
-FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE ST_Intersects(a.rast, b.geom) AND b.concelho like 'PORTO';
+SELECT ST_Clip(a.rast, b.geom, true), b.municipality 
+FROM rasters.dem AS a, vectors.porto_parishes AS b 
+WHERE ST_Intersects(a.rast, b.geom) AND b.municipality like 'PORTO';
 ```
 **Example 3 - ST_Union**
 
@@ -134,8 +122,8 @@ Union of multiple tiles into one single raster.
 ```sql
 CREATE TABLE schema_name.union AS 
 SELECT ST_Union(ST_Clip(a.rast, b.geom, true))
-FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast);
+FROM rasters.dem AS a, vectors.porto_parishes AS b 
+WHERE b.municipality ilike 'porto' and ST_Intersects(b.geom,a.rast);
 ```
 
 In addition to the example above, st_union also allows us operations on overlapping rasters based on a given aggregate function, namely FIRST LAST SUM COUNT MEAN or RANGE. For example, if we have multiple precipitation rasters and we need an average value, we can use st_union or map_algebra. For more information about st_union please check the documentation: [https://postgis.net/docs/RT_ST_Union.html](https://postgis.net/docs/RT_ST_Union.html)
@@ -148,50 +136,52 @@ In the next examples, we will rasterize one vector and learn some important Post
 
 **Example 1 - ST_AsRaster**
 
-First, let us use *ST_AsRaster* to rasterize table freguesias from the city of Porto with the same spatial characteristics: pixel size, extents etc. 
+First, let us use *ST_AsRaster* to rasterize table parishes from the city of Porto with the same spatial characteristics: pixel size, extents etc. 
 
 ```sql
-CREATE TABLE schema_name.porto_freguesias AS
+CREATE TABLE schema_name.porto_parishes AS
 WITH r AS (
 	SELECT rast FROM rasters.dem 
 	LIMIT 1
 )
 SELECT ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767) AS rast
-FROM vectors.porto_freguesias AS a, r
-WHERE a.concelho ilike 'porto';
+FROM vectors.porto_parishes AS a, r
+WHERE a.municipality ilike 'porto';
 ```
 In this example, we use pixeltype '8BUI' makring an 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers; signed integers are capable of representing negative integers as well. For more information about PostGIS raster types, check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
 
 
 **Example 2 - ST_Union**
 
-In this example, we will use *ST_Union* to union all the rasters (table rows) into one single raster.
+In the previous example, the resulting raster is one parish per record, per table row. Please visualize the previous result.
+
+Now, in this example, we will use *ST_Union* to union all the records (table rows) of the previous example into one single raster.
 
 ```sql
-DROP TABLE schema_name.porto_freguesias;
-CREATE TABLE schema_name.porto_freguesias AS
+DROP TABLE schema_name.porto_parishes; --> drop table porto_parishes first
+CREATE TABLE schema_name.porto_parishes AS
 WITH r AS (
 	SELECT rast FROM rasters.dem 
 	LIMIT 1
 )
 SELECT st_union(ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767)) AS rast
-FROM vectors.porto_freguesias AS a, r
-WHERE a.concelho ilike 'porto';
+FROM vectors.porto_parishes AS a, r
+WHERE a.municipality ilike 'porto';
 ```
 **Example 3 - ST_Tile**
 
 After having obtained a single raster, we can generate tiles with the *ST_Tile* function.
 
 ```sql
-DROP TABLE schema_name.porto_freguesias; --> drop table porto_freguesias first
-CREATE TABLE schema_name.porto_freguesias AS
+DROP TABLE schema_name.porto_parishes; --> drop table porto_parishes first
+CREATE TABLE schema_name.porto_parishes AS
 WITH r AS (
 	SELECT rast FROM rasters.dem 
 	LIMIT 1
 )
 SELECT st_tile(st_union(ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767)),128,128,true,-32767) AS rast
-FROM vectors.porto_freguesias AS a, r
-WHERE a.concelho ilike 'porto';
+FROM vectors.porto_parishes AS a, r
+WHERE a.municipality ilike 'porto';
 ```
 
 
@@ -208,8 +198,8 @@ St_Intersection is similar to ST_Clip. In ST_Clip the function returns a raster 
 ```sql
 create table schema_name.intersection as 
 SELECT a.rid,(ST_Intersection(b.geom,a.rast)).geom,(ST_Intersection(b.geom,a.rast)).val
-FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
+FROM rasters.landsat8 AS a, vectors.porto_parishes AS b 
+WHERE b.parish ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 
 **Example 2 - ST_DumpAsPolygons**
@@ -219,8 +209,8 @@ WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```sql
 CREATE TABLE schema_name.dumppolygons AS
 SELECT a.rid,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).geom,(ST_DumpAsPolygons(ST_Clip(a.rast,b.geom))).val
-FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b 
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
+FROM rasters.landsat8 AS a, vectors.porto_parishes AS b 
+WHERE b.parish ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 
 Both functions return a set of geomvals, for more information about the geomval data type check the documentation: [https://postgis.net/docs/geomval.html](https://postgis.net/docs/geomval.html)
@@ -241,13 +231,13 @@ FROM rasters.landsat8;
 
 **Example 2 - ST_Clip**
 
-Let's now clip one "freguesia" from the *vectors.porto_freguesias* table. This will help in the next examples.
+Let's now clip one "parish" from the *vectors.porto_parishes* table. This will help in the next examples.
 
 ```sql
 CREATE TABLE schema_name.paranhos_dem AS
 SELECT a.rid,ST_Clip(a.rast, b.geom,true) as rast
-FROM rasters.dem AS a, vectors.porto_freguesias AS b
-WHERE b.freguesia ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
+FROM rasters.dem AS a, vectors.porto_parishes AS b
+WHERE b.parish ilike 'paranhos' and ST_Intersects(b.geom,a.rast);
 ```
 **Example 3 - ST_Slope**
 
@@ -301,26 +291,26 @@ SELECT (stats).min,(stats).max,(stats).mean FROM t;
 
 **Example 8 - ST_SummaryStats with GROUP BY**
 
-In order to have the statistics by polygon "freguesia" we can perform a GROUP BY.
+In order to have the statistics by polygon "parish" we can perform a GROUP BY.
 
 ```sql
 WITH t AS (
-	SELECT b.freguesia AS freguesia, st_summarystats(ST_Union(ST_Clip(a.rast, b.geom,true))) AS stats
-	FROM rasters.dem AS a, vectors.porto_freguesias AS b
-	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
-	group by b.freguesia
+	SELECT b.parish AS parish, st_summarystats(ST_Union(ST_Clip(a.rast, b.geom,true))) AS stats
+	FROM rasters.dem AS a, vectors.porto_parishes AS b
+	WHERE b.municipality ilike 'porto' and ST_Intersects(b.geom,a.rast)
+	group by b.parish
 )
-SELECT freguesia,(stats).min,(stats).max,(stats).mean FROM t;
+SELECT parish,(stats).min,(stats).max,(stats).mean FROM t;
 ```
 
 **Example 9 - ST_Value**
 
-*ST_Value* function allows us to extract a pixel value from a point or a set of points. In this example, we extract the elevation of the points that are in the *vectors.lugares* table. Because the points geometry is multipoint and *ST_Value* function requires single point geometry, we convert from multi point into single point geometry using *(ST_Dump(b.geom)).geom*.
+*ST_Value* function allows us to extract a pixel value from a point or a set of points. In this example, we extract the elevation of the points that are in the *vectors.places* table. Because the points geometry is multipoint and *ST_Value* function requires single point geometry, we convert from multi point into single point geometry using *(ST_Dump(b.geom)).geom*.
 
 ```sql
 SELECT b.name,st_value(a.rast,(ST_Dump(b.geom)).geom)
 FROM 
-rasters.dem a, vectors.lugares AS b
+rasters.dem a, vectors.places AS b
 WHERE ST_Intersects(a.rast,b.geom)
 ORDER BY b.name;
 ```
@@ -356,7 +346,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'tpi30'::name,'rast'::name);
 
 Time to put together what you have learned so far to solve a spatial problem. 
 
-The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (concelho) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
+The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (municipality) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
 
 In the end check the result in QGIS.
 
@@ -377,8 +367,8 @@ NDVI=(NIR-Red)/(NIR+Red)
 CREATE TABLE schema_name.porto_ndvi AS 
 WITH r AS (
 	SELECT a.rid,ST_Clip(a.rast, b.geom,true) AS rast
-	FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b
-	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
+	FROM rasters.landsat8 AS a, vectors.porto_parishes AS b
+	WHERE b.municipality ilike 'porto' and ST_Intersects(b.geom,a.rast)
 )
 SELECT
 	r.rid,ST_MapAlgebra(
@@ -423,8 +413,8 @@ Now comes the map algebra query:
 CREATE TABLE schema_name.porto_ndvi2 AS 
 WITH r AS (
 	SELECT a.rid,ST_Clip(a.rast, b.geom,true) AS rast
-	FROM rasters.landsat8 AS a, vectors.porto_freguesias AS b
-	WHERE b.concelho ilike 'porto' and ST_Intersects(b.geom,a.rast)
+	FROM rasters.landsat8 AS a, vectors.porto_parishes AS b
+	WHERE b.municipality ilike 'porto' and ST_Intersects(b.geom,a.rast)
 )
 SELECT
 	r.rid,ST_MapAlgebra(
@@ -448,7 +438,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::nam
 
 **Example 3 - The TPI functions**
 
-Current implemented TPI function inside PostGIS uses map algebra with a callback function. We can analyse thouse functions to better understand map algebra.
+Current implemented TPI function inside PostGIS uses map algebra with a callback function. We can analyse this functions to better understand map algebra.
 In *public* schema functions there are two functions for TPI:
 
 1. *public._st_tpi4ma* - The callback function used in map algebra.
@@ -595,8 +585,8 @@ Follow our [guide to publish the raster using GeoServer](doc/geoserver.md).
 ```sql
 create table schema_name.tpi30_porto as
 SELECT ST_TPI(a.rast,1) as rast
-FROM rasters.dem AS a, vectors.porto_freguesias AS b 
-WHERE ST_Intersects(a.rast, b.geom) AND b.concelho ilike 'porto'
+FROM rasters.dem AS a, vectors.porto_parishes AS b 
+WHERE ST_Intersects(a.rast, b.geom) AND b.municipality ilike 'porto'
 ```
 Let's add the spatial index ...
 ```sql
