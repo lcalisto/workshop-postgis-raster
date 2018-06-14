@@ -346,7 +346,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'tpi30'::name,'rast'::name);
 
 Time to put together what you have learned so far to solve a spatial problem. 
 
-The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only in municipality (municipality) of porto. You need to use ST_Intersects, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
+The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only the municipality of Porto. You need to use *ST_Intersects*, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
 
 In the end check the result in QGIS.
 
