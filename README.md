@@ -568,11 +568,11 @@ END
 
  You can access this WMS using the following URL: 
 
-[http://vps470543.ovh.net/mapservices/srtm](http://vps470543.ovh.net/mapservices/srtm)
+[https://sigap.calisto.pt/mapservices/srtm](https://sigap.calisto.pt/mapservices/srtm)
 
 or using the browser with:
 
-[http://vps470543.ovh.net/mapservices/srtm?layer=srtm&mode=map](http://vps470543.ovh.net/mapservices/srtm?layer=srtm&mode=map)
+[https://sigap.calisto.pt/mapservices/srtm?layer=srtm&mode=map](https://sigap.calisto.pt/mapservices/srtm?layer=srtm&mode=map)
 
 ## Publish data using GeoServer
 
