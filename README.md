@@ -388,7 +388,7 @@ Add constraints
 SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi'::name,'rast'::name);
 ```
 
-It is possible to use a map algebra operation on many rasters and/or many bands, for that you need rastbandargset. For more information about it please check this [*ST_MapAlgebra* on the official documentation.](https://postgis.net/docs/RT_ST_MapAlgebra.html)
+It is possible to use a map algebra operation on many rasters and/or many bands, for that you need **rastbandargset**. For more information about it please check this [*ST_MapAlgebra* on the official documentation.](https://postgis.net/docs/RT_ST_MapAlgebra.html)
 
 
 **Example 2 - The callback Function**
