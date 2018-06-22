@@ -256,7 +256,7 @@ In order to reclass a raster we can use *ST_Reclass* function.
 
 ```sql
 CREATE TABLE schema_name.paranhos_slope_reclass AS
-SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, ]16-30]:2, ]31-9999:3', '32BF',0)
+SELECT a.rid,ST_Reclass(a.rast,1,']0-15]:1, (15-30]:2, (30-9999:3', '32BF',0)
 FROM schema_name.paranhos_slope AS a;
 ```
 
