@@ -5,6 +5,15 @@
 ### This workshop aims to explain and exemplify the usage of PostGIS raster.
 
 
+----------
+## Requirements
+
+To follow this workshop you will need:
+
+ - PostgreSQL with the PostGIS extension. If you are using PostGIS 3 or later, note that raster support comes in the separate ***postgis_raster*** extension.
+ - pgAdmin and/or psql to run the examples
+ - The *raster2pgsql* and *gdal_translate* command line tools, installed together with PostGIS and GDAL
+ - QGIS to visualise the results
 
 ----------
 ## Create and restore the database
@@ -17,7 +26,7 @@ Using pgAdmin please create a new, empty database and then restore the existing 
 ----------
 ## Database structure
 
-The restored database consists of the folowing structure:
+The restored database consists of the following structure:
 
  - schema_name *(you should rename it with your name)*
  - public
@@ -37,24 +46,24 @@ Please explore the database before continuing.
 ## Loading rasters
 
 We will start by loading the raster files, *Landsat8_L1TP_RGBN.tif* and *srtm_1arc_v3.tif* into the rasters schema. These files are located inside the [rasters](https://github.com/lcalisto/workshop-postgis-raster/tree/master/rasters) folder in this repository.
-For this operation, we'll use [raster2pgsql](http://postgis.refractions.net/docs/using_raster.xml.html#RT_Raster_Loader), please check software documentation for more information.
+For this operation, we'll use [raster2pgsql](https://postgis.net/docs/using_raster_dataman.html#RT_Raster_Loader), please check software documentation for more information.
 
 
 #### Load the elevation data
 
-Starting with the first two examples, to begin we'll use *raster2pgsql* to create a new .sql file. Later, we can load this .sql file using *psql* or *pgAdmin*. Please replace mypath\ by the correct path to your *raster2pgsql* executable; the *srtm_1arc_v3.tif* file and the path where *raster2pgsql* will create the *dem.sql* file.
+Starting with the first two examples, to begin we'll use *raster2pgsql* to create a new .sql file. Later, we can load this .sql file using *psql* or *pgAdmin*. Please adjust the paths to the location of the *srtm_1arc_v3.tif* file and to where the *dem.sql* file should be created. On Windows, use the full path to *raster2pgsql.exe*.
 
 **Example 1 - Elevation**
 
 ```bash
-mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C -M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem > mypath\dem.sql
+raster2pgsql -s 3763 -N -32767 -t 100x100 -I -C -M -d rasters/srtm_1arc_v3.tif rasters.dem > dem.sql
 ```
 
 In example 2, we will load the data directly into the database.
 
 **Example 2 - Elevation**
 ```bash 
-mypath\raster2pgsql.exe -s 3763 -N -32767 -t 100x100 -I -C -M -d mypath\rasters\srtm_1arc_v3.tif rasters.dem | psql -d postgis_raster -h localhost -U postgres -p 5432
+raster2pgsql -s 3763 -N -32767 -t 100x100 -I -C -M -d rasters/srtm_1arc_v3.tif rasters.dem | psql -d postgis_raster -h localhost -U postgres -p 5432
 ```
 
 Now let's load landsat 8 data with a 128x128 tile size directly into the database.
@@ -62,7 +71,7 @@ Now let's load landsat 8 data with a 128x128 tile size directly into the databas
 **Example 3 - Landsat 8**
 
 ```bash
-mypath\raster2pgsql.exe -s 3763 -N -32767 -t 128x128 -I -C -M -d mypath\rasters\Landsat8_L1TP_RGBN.TIF rasters.landsat8 | psql -d postgis_raster -h localhost -U postgres -p 5432
+raster2pgsql -s 3763 -N -32767 -t 128x128 -I -C -M -d rasters/Landsat8_L1TP_RGBN.TIF rasters.landsat8 | psql -d postgis_raster -h localhost -U postgres -p 5432
 
 ```
 
@@ -86,7 +95,7 @@ FROM rasters.dem AS a, vectors.porto_parishes AS b
 WHERE ST_Intersects(a.rast, b.geom) AND b.municipality ilike 'porto';
 ```
 
-The flowing three steps of code are recomended when creating new raster tables:
+The following three steps of code are recommended when creating new raster tables:
 
 A - add serial primary key:
 
@@ -148,7 +157,7 @@ SELECT ST_AsRaster(a.geom,r.rast,'8BUI',a.id,-32767) AS rast
 FROM vectors.porto_parishes AS a, r
 WHERE a.municipality ilike 'porto';
 ```
-In this example, we use pixeltype '8BUI' makring an 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers; signed integers are capable of representing negative integers as well. For more information about PostGIS raster types, check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
+In this example, we use pixeltype '8BUI' meaning an 8-bit unsigned integer. Unsigned integers are capable of representing only non-negative integers; signed integers are capable of representing negative integers as well. For more information about PostGIS raster types, check the documentation: [https://postgis.net/docs/RT_ST_BandPixelType.html](https://postgis.net/docs/RT_ST_BandPixelType.html)
 
 
 **Example 2 - ST_Union**
@@ -323,8 +332,8 @@ More information about TPI can be found [here.](http://www.jennessent.com/downlo
 
 **Example 10 - ST_TPI**
 
-*ST_Value* function allows us to create a TPI map from an elevation DEM. Current PostGIS version can calculate TPI of one pixel using a neighborhood around that cell of one cell only. 
-In this example, we are going to compute the TPI using *rasters.dem* table as input. Because this table as a resolution of 30 meters, and because this TPI only uses one neighborhood cell for the computations, we call it TPI30. We can create a table with the result of the query in *schema_name* schema so you can view the result in QGIS.
+*ST_TPI* function allows us to create a TPI map from an elevation DEM. Current PostGIS version can calculate TPI of one pixel using a neighborhood around that cell of one cell only. 
+In this example, we are going to compute the TPI using *rasters.dem* table as input. Because this table has a resolution of 30 meters, and because this TPI only uses one neighborhood cell for the computations, we call it TPI30. We can create a table with the result of the query in *schema_name* schema so you can view the result in QGIS.
 
 ```sql
 create table schema_name.tpi30 as
@@ -346,7 +355,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'tpi30'::name,'rast'::name);
 
 Time to put together what you have learned so far to solve a spatial problem. 
 
-The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only the municipality of Porto. You need to use *ST_Intersects*, check *Example 1 - ST_Intersects* for reference. Compare the diferent processing times.
+The previous query can take more than one minute to process. As you can imagine some queries can take too long to process. In order to improve processing time sometimes it's possible to restrict our area of interest and compute a smaller region. Adapt the query from *example 10* in order to process only the municipality of Porto. You need to use *ST_Intersects*, check *Example 1 - ST_Intersects* for reference. Compare the different processing times.
 
 In the end check the result in QGIS.
 
@@ -441,7 +450,7 @@ SELECT AddRasterConstraints('schema_name'::name, 'porto_ndvi2'::name,'rast'::nam
 
 **Example 3 - The TPI functions**
 
-Current implemented TPI function inside PostGIS uses map algebra with a callback function. We can analyse this functions to better understand map algebra.
+Current implemented TPI function inside PostGIS uses map algebra with a callback function. We can analyse these functions to better understand map algebra.
 In *public* schema functions there are two functions for TPI:
 
 1. *public._st_tpi4ma* - The callback function used in map algebra.
@@ -461,13 +470,13 @@ MapAlgebra with callback function:
 
 **New custom implementation of TPI**
 
-Current PostGIS implementation of TPI using *ST_TPI*, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annnulus and outter annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
+Current PostGIS implementation of TPI using *ST_TPI*, only allows to compute TPI with one neighborhood cell. A new implementation of TPI allowing the user to specify neighborhood cells (inner annulus and outer annulus), using map algebra, can be found here: [https://github.com/lcalisto/postgis_customTPI](https://github.com/lcalisto/postgis_customTPI) 
 
 
 ----------
 ## Export data
 
-In the next examples, we will export our rasters. Postgis can save rasters in diferent file formats. In the following examples, we use ST_AsTiff and ST_AsGDALRaster, but also we will use pure Gdal functionality. 
+In the next examples, we will export our rasters. Postgis can save rasters in different file formats. In the following examples, we use ST_AsTiff and ST_AsGDALRaster, but also we will use pure Gdal functionality. 
 
 **Example 0 - Using QGIS**
 
@@ -475,7 +484,7 @@ If you load the raster table/view in QGIS then you will be able to save/export t
 
 **Example 1 - ST_AsTiff**
 
-ST_AsTiff function **does not save the output into the disk***, instead outputs is the binary representation of the tiff, this can be very usefull for webplatforms; scripts etc. were the developer can control what to do with the binary, for example save it into the disk or just display it.
+ST_AsTiff function **does not save the output into the disk**, instead the output is the binary representation of the tiff, this can be very useful for web platforms, scripts etc. where the developer can control what to do with the binary, for example save it into the disk or just display it.
 
 ```sql
 SELECT ST_AsTiff(ST_Union(rast))
@@ -485,7 +494,7 @@ FROM schema_name.porto_ndvi;
  
 **Example 2 - ST_AsGDALRaster**
 
-Like ST_AsTiff function ST_AsGDALRaster **does not save the output into the disk***, instead outputs is the binary representation of the any GDAL format.
+Like ST_AsTiff function, ST_AsGDALRaster **does not save the output into the disk**, instead the output is the binary representation in any GDAL supported format.
 
 ```sql
 SELECT ST_AsGDALRaster(ST_Union(rast), 'GTiff',  ARRAY['COMPRESS=DEFLATE', 'PREDICTOR=2', 'PZLEVEL=9'])
@@ -508,7 +517,7 @@ SELECT lo_from_bytea(0,
         ) AS loid
 FROM schema_name.porto_ndvi;
 ----------------------------------------------
-SELECT lo_export(loid, 'G:\myraster.tiff') --> Save the file in a place were the user postgres have access. In windows a flash drive usualy works fine.
+SELECT lo_export(loid, '/tmp/myraster.tiff') --> Save the file in a place where the postgres user has access. On Windows use something like 'C:\temp\myraster.tiff'.
    FROM tmp_out;
 ----------------------------------------------
 SELECT lo_unlink(loid)
@@ -520,7 +529,7 @@ For more information on exporting rasters using PostGIS, check the documentation
 
 **Example 4 - Using Gdal**
 
-Gdal has support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. **If your raster as tiles you should use *mode=2* option.**
+Gdal has support for reading PostGIS rasters. You can use gdal_translate to export the raster into any GDAL supported format. **If your raster has tiles you should use *mode=2* option.**
 
 ```bash
 gdal_translate -co COMPRESS=DEFLATE -co PREDICTOR=2 -co ZLEVEL=9 PG:"host=localhost port=5432 dbname=postgis_raster user=postgres password=postgis schema=schema_name table=porto_ndvi mode=2" porto_ndvi.tiff
@@ -546,7 +555,7 @@ MAP
 			'wms_title' 'Terrain wms'
 			'wms_srs' 'EPSG:3763 EPSG:4326 EPSG:3857'
 			'wms_enable_request' '*'
-			'wms_onlineresource' 'http://54.37.13.53/mapservices/srtm'
+			'wms_onlineresource' 'http://myserver/mapservices/srtm'
 		END
 	END
 
@@ -569,13 +578,7 @@ MAP
 END
 ```
 
- You can access this WMS using the following URL: 
-
-[https://sigap.calisto.pt/mapservices/srtm](https://sigap.calisto.pt/mapservices/srtm)
-
-or using the browser with:
-
-[https://sigap.calisto.pt/mapservices/srtm?layer=srtm&mode=map](https://sigap.calisto.pt/mapservices/srtm?layer=srtm&mode=map)
+After configuring MapServer, you can access the WMS with a GetMap request or add it directly in QGIS as a WMS layer.
 
 ## Publish data using GeoServer
 
